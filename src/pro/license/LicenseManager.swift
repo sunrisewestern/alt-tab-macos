@@ -26,6 +26,13 @@ class LicenseManager {
     /// Maps version-limited variant slugs to their max supported version.
     /// When a Pro variant needs a cutoff, add: "variant_slug": "X.Y.Z".
     static let versionLimitedVariants: [String: String] = [:]
+    static var localProUnlockEnabled: Bool {
+        #if LOCAL_PRO_UNLOCK
+        return true
+        #else
+        return false
+        #endif
+    }
 
     let clock: Clock
     let keychain: Keychain
@@ -174,6 +181,7 @@ class LicenseManager {
     }
 
     func computeState() -> LicenseState {
+        guard !Self.localProUnlockEnabled else { return .pro }
         if keychain.value(account: Self.keychainKeyAccount) != nil {
             let lastValidationResult = defaults.bool(forKey: "lastValidationResult")
             guard lastValidationResult else { return .trialExpired }
